@@ -1,0 +1,40 @@
+// Distinct CUSTOMER requestUri_s string 
+AzureDiagnostics 
+| where ResourceProvider == "MICROSOFT.NETWORK" and Category == "FrontdoorAccessLog"
+| where requestUri_s contains "CUSTOMER"
+| where TimeGenerated between (datetime(2023-11-15 00:00:00) .. datetime(2023-11-22 00:00:00))
+| distinct substring(requestUri_s, indexof(requestUri_s,"http"),50)
+
+------------------------------------------------------------------------------------------------------------------------------------------
+
+// CUSTOMER Server-Health call
+AzureDiagnostics 
+| where ResourceProvider == "MICROSOFT.NETWORK" and Category == "FrontdoorAccessLog"
+| where requestUri_s contains "CUSTOMER" and requestUri_s contains 'Server-Health'
+| extend StatusCode = iif(toint(httpStatusCode_s) == 200, "Success", "Timeout")
+| summarize Success = countif(StatusCode == "Success"), Timeout = countif(StatusCode == "Timeout") by bin (TimeGenerated, 5m)
+| where TimeGenerated between (datetime(2023-11-11 13:00:00) .. datetime(2023-11-11 15:00:00))
+| project TimeGenerated, Success, Timeout
+| render columnchart  
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+
+// CUSTOMER Markets call
+AzureDiagnostics 
+| where ResourceProvider == "MICROSOFT.NETWORK" and Category == "FrontdoorAccessLog"
+| where requestUri_s contains "CUSTOMER" and requestUri_s contains 'Markets'
+| extend StatusCode = iif(toint(httpStatusCode_s) == 200, "Success", "Timeout")
+| summarize Success = countif(StatusCode == "Success"), Timeout = countif(StatusCode == "Timeout") by bin (TimeGenerated, 5m)
+| where TimeGenerated between (datetime(2023-11-11 13:00:00) .. datetime(2023-11-11 15:00:00))
+| project TimeGenerated, Success, Timeout
+| render columnchart  
+
+// CUSTOMER ServeMarketrPriceByUniqueID call
+AzureDiagnostics 
+| where ResourceProvider == "MICROSOFT.NETWORK" and Category == "FrontdoorAccessLog"
+| where requestUri_s contains "CUSTOMER" and requestUri_s contains 'ServeMarketrPriceByUniquePricingID'
+| extend StatusCode = iif(toint(httpStatusCode_s) == 200, "Success", "Timeout")
+| summarize Success = countif(StatusCode == "Success"), Timeout = countif(StatusCode == "Timeout") by bin (TimeGenerated, 5m)
+| where TimeGenerated between (datetime(2023-11-11 13:00:00) .. datetime(2023-11-11 15:00:00))
+| project TimeGenerated, Success, Timeout
+| render timechart  
