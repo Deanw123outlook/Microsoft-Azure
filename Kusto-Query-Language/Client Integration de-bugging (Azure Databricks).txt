@@ -2,7 +2,7 @@ The following KQL queries will be working against Azure Databricks to pull out I
 We will use Tesla as sample client example and changed up naming converntions for data privacy purposes.
 
 Query 1
-Distinct Tesla requestUri_s string 
+Distinct Tesla request_Uris string 
 - This will pull out all the distinct strings including Tesla and pre-defined substring. This can help determine 
   investigation direction.
 
@@ -23,17 +23,17 @@ Tesla RequestPriceByAUXcode call
   certain area's of infastructure via Azure Databricks.
 
 ------------------------------------------------------------------------------------------------------------------------------------------
-// Distinct Tesla requestUri_s string 
+// Distinct Tesla request_Uris string 
 AzureDiagnostics 
 | where ResourceProvider == "MICROSOFT.NETWORK" and Category == "FrontdoorAccessLog"
-| where requestUri_s contains "Tesla"
+| where request_Uris contains "Tesla"
 | where TimeGenerated between (datetime(2023-11-15 00:00:00) .. datetime(2023-11-22 00:00:00))
-| distinct substring(requestUri_s, indexof(requestUri_s,"http"),70)
+| distinct substring(request_Uris, indexof(request_Uris,"http"),70)
 ------------------------------------------------------------------------------------------------------------------------------------------
 // Tesla APIhealthCheck 
 AzureDiagnostics 
 | where ResourceProvider == "MICROSOFT.NETWORK" and Category == "FrontdoorAccessLog"
-| where requestUri_s contains "Tesla" and requestUri_s contains 'APIhealthCheck'
+| where request_Uris contains "Tesla" and request_Uris contains 'APIhealthCheck'
 | extend StatusCode = iif(toint(httpStatusCode_s) == 200, "Success", "Timeout")
 | summarize Success = countif(StatusCode == "Success"), Timeout = countif(StatusCode == "Timeout") by bin (TimeGenerated, 5m)
 | where TimeGenerated between (datetime(2023-11-11 13:00:00) .. datetime(2023-11-11 15:00:00))
@@ -43,7 +43,7 @@ AzureDiagnostics
 // Tesla GetMarketData 
 AzureDiagnostics 
 | where ResourceProvider == "MICROSOFT.NETWORK" and Category == "FrontdoorAccessLog"
-| where requestUri_s contains "Tesla" and requestUri_s contains 'GetMarketData'
+| where request_Uris contains "Tesla" and request_Uris contains 'GetMarketData'
 | extend StatusCode = iif(toint(httpStatusCode_s) == 200, "Success", "Timeout")
 | summarize Success = countif(StatusCode == "Success"), Timeout = countif(StatusCode == "Timeout") by bin (TimeGenerated, 5m)
 | where TimeGenerated between (datetime(2023-11-11 13:00:00) .. datetime(2023-11-11 15:00:00))
@@ -53,7 +53,7 @@ AzureDiagnostics
 // Tesla RequestPriceByAUXcode 
 AzureDiagnostics 
 | where ResourceProvider == "MICROSOFT.NETWORK" and Category == "FrontdoorAccessLog"
-| where requestUri_s contains "Tesla" and requestUri_s contains 'RequestPriceByAUXcode'
+| where request_Uris contains "Tesla" and request_Uris contains 'RequestPriceByAUXcode'
 | extend StatusCode = iif(toint(httpStatusCode_s) == 200, "Success", "Timeout")
 | summarize Success = countif(StatusCode == "Success"), Timeout = countif(StatusCode == "Timeout") by bin (TimeGenerated, 5m)
 | where TimeGenerated between (datetime(2023-11-11 13:00:00) .. datetime(2023-11-11 15:00:00))
